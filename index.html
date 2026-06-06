@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<script>
+// 1. Atualiza a carteira com Moedas e Chaves Infinitas, pula o tutorial e configura o Highscore
+localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
+  "name": "Kamegame unlockedAll",
+  "muted": false,
+  "tutorial": false,
+  "adConsent": false,
+  "wordHunt": {
+    "word": "wO=w*/DGOr@8",
+    "currentLetter": "",
+    "completed": []
+  },
+  "currencies": {
+    "coins": 9999999,
+    "keys": 9999999
+  },
+  "highscore": 9999999,
+  "missions": [
+    [{"id": "mission-score-onerun", "progress": 9999999}]
+  ],
+  "rewardedBreakPrize": 0
+}));
+
+// 2. Desbloqueia e já deixa o Ninja selecionado no ShopSettings
+localStorage.setItem('ShopSettings', JSON.stringify({
+  "selectedCharacter": "fresh",
+  "purchased": {
+    "characters": ["jake", "tricky", "fresh", "spike", "yutani", "king", "lucy", "ninja", "tagbot", "tasha", "brody"],
+    "outfits": [],
+    "boards": ["hoverboard", "bigkahuna", "bouncer", "daredevil", "greatwhite", "hotrod", "lowrider", "lumberjack", "monster", "scoot", "skullfire", "starboard", "sunset", "superhero", "teleporter", "windglider"],
+    "boosts": {
+      "consumables": { "hoverboard": 999999999999, "mysteryBox": 999, "scoreBooster": 999999999999, "headstart": 999999 },
+      "permanents": { "jetpack": 6, "sneakers": 6, "magnet": 6, "multiplier": 6 }
+    }
+  }
+}));
+
+// 3. Desbloqueia e já deixa a prancha Teleporter selecionada no BoardSettings
+localStorage.setItem('BoardSettings', JSON.stringify({
+  "unlockedBoards": ["hoverboard", "teleporter"],
+  "selectedBoard": "teleporter"
+}));
+
+// 4. Salva a prancha ativa na outra chave que você encontrou
+localStorage.setItem('BoardSettings', JSON.stringify({
+  "name": "teleporter",
+  "powerups": [0]
+}));
+
+console.log("TUDO MODIFICADO! Moedas, Chaves, Ninja, Teleporter e Sem Tutorial. Dá o F5 agora, cria!");
+</script>
+<head>
+    <meta charset="UTF-8">
+    <script src="poki-sdk.js"></script>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport"
+          content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
+    <meta name="description" content="">
+
+    <link rel="manifest" href="subwaysurfers.webmanifest">
+    <link rel="icon" href="assets/images/app-icon-16.png" type="image/png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/images/app-icon-114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/images/app-icon-72.png">
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="assets/images/app-icon-57.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/images/app-icon-57.png">
+
+    <title>Subway Surfers Web / Играть на igroutka.ru</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            background-color: #0b316b;
+            overflow: hidden;
+            background-image: url('assets/preload/splash.png');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        #message {
+            text-align: center;
+            font-size: 8px;
+            z-index: 5;
+            font-family: "Verdana", sans-serif;
+            color: #fff;
+            position: fixed;
+            width: 100%;
+            z-index: 9999;
+        }
+
+        .dot {
+            display: inline;
+            margin-left: 0.2em;
+            margin-right: 0.2em;
+            position: relative;
+            top: -1em;
+            font-size: 3.5em;
+            opacity: 0;
+            animation: showHideDot 2.5s ease-in-out infinite;
+        }
+
+        .dot.one {
+            animation-delay: 0.2s;
+        }
+
+        .dot.two {
+            animation-delay: 0.4s;
+        }
+
+        .dot.three {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes showHideDot {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            60% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+    </style>
+<script type="text/javascript" src="//m.igroutka.ru/files/scripts/scr.js"></script></head>
+<body>
+<script>
+    window.NOSW = true;
+    window.GAME_CONFIG = {
+        pokiSdkDebug: false,
+        leaderboard: 'mockup',
+        bundlesPath: './bundles',
+    }
+</script>
+<div id="message">
+    <h1>Loading</h1>
+    <h1 class="dot one">.</h1>
+    <h1 class="dot two">.</h1>
+    <h1 class="dot three">.</h1>
+</div>
+<script src="js/loading.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
