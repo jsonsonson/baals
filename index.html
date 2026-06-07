@@ -1,56 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<script>
-// 1. Atualiza a carteira com Moedas e Chaves Infinitas, pula o tutorial e configura o Highscore
-localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
-  "name": "Kamegame unlockedAll",
-  "muted": false,
-  "tutorial": false,
-  "adConsent": false,
-  "wordHunt": {
-    "word": "wO=w*/DGOr@8",
-    "currentLetter": "",
-    "completed": []
-  },
-  "currencies": {
-    "coins": 9999999,
-    "keys": 9999999
-  },
-  "highscore": 9999999,
-  "missions": [
-    [{"id": "mission-score-onerun", "progress": 9999999}]
-  ],
-  "rewardedBreakPrize": 0
-}));
-
-// 2. Desbloqueia e já deixa o Ninja selecionado no ShopSettings
-localStorage.setItem('ShopSettings', JSON.stringify({
-  "selectedCharacter": "fresh",
-  "purchased": {
-    "characters": ["jake", "tricky", "fresh", "spike", "yutani", "king", "lucy", "ninja", "tagbot", "tasha", "brody"],
-    "outfits": [],
-    "boards": ["hoverboard", "bigkahuna", "bouncer", "daredevil", "greatwhite", "hotrod", "lowrider", "lumberjack", "monster", "scoot", "skullfire", "starboard", "sunset", "superhero", "teleporter", "windglider"],
-    "boosts": {
-      "consumables": { "hoverboard": 999999999999, "mysteryBox": 999, "scoreBooster": 999999999999, "headstart": 999999 },
-      "permanents": { "jetpack": 6, "sneakers": 6, "magnet": 6, "multiplier": 6 }
-    }
-  }
-}));
-
-// 3. Desbloqueia e já deixa a prancha Teleporter selecionada no BoardSettings
-localStorage.setItem('BoardSettings', JSON.stringify({
-  "unlockedBoards": ["hoverboard", "teleporter"],
-  "selectedBoard": "teleporter"
-}));
-
-// 4. Salva a prancha ativa na outra chave que você encontrou
-localStorage.setItem('BoardSettings', JSON.stringify({
-  "name": "teleporter",
-  "powerups": [0]
-}));
-
-console.log("TUDO MODIFICADO! Moedas, Chaves, Ninja, Teleporter e Sem Tutorial. Dá o F5 agora, cria!");
-</script>
 <head>
     <meta charset="UTF-8">
     <script src="poki-sdk.js"></script>
@@ -71,7 +20,7 @@ console.log("TUDO MODIFICADO! Moedas, Chaves, Ninja, Teleporter e Sem Tutorial. 
     <link rel="apple-touch-icon-precomposed" sizes="57x57" href="assets/images/app-icon-57.png">
     <link rel="apple-touch-icon-precomposed" href="assets/images/app-icon-57.png">
 
-    <title>Ssbwgl</title>
+    <title>Ssbw</title>
     <style>
         body, html {
             margin: 0;
@@ -105,36 +54,37 @@ console.log("TUDO MODIFICADO! Moedas, Chaves, Ninja, Teleporter e Sem Tutorial. 
             animation: showHideDot 2.5s ease-in-out infinite;
         }
 
-        .dot.one {
-            animation-delay: 0.2s;
-        }
-
-        .dot.two {
-            animation-delay: 0.4s;
-        }
-
-        .dot.three {
-            animation-delay: 0.6s;
-        }
+        .dot.one { animation-delay: 0.2s; }
+        .dot.two { animation-delay: 0.4s; }
+        .dot.three { animation-delay: 0.6s; }
 
         @keyframes showHideDot {
-            0% {
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            60% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            60% { opacity: 1; }
+            100% { opacity: 0; }
         }
-
     </style>
-<script type="text/javascript" src="//m.igroutka.ru/files/scripts/scr.js"></script></head>
+    <script type="text/javascript" src="//m.igroutka.ru/files/scripts/scr.js"></script>
+</head>
 <body>
+
+
+<div id="modal-idioma" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b316b; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; color: white; display: none;">
+  <h2 style="margin-bottom: 25px; font-size: 22px; text-shadow: 2px 2px #000;">Select Language / Selecione o Idioma</h2>
+  <div style="display: flex; gap: 20px;">
+    <button id="btn-lang-en" style="padding: 15px 35px; font-size: 18px; cursor: pointer; border: 3px solid #fff; background: #f15a24; color: white; border-radius: 8px; font-weight: bold; box-shadow: 0px 4px #993d18;">Português</button>
+    <button id="btn-lang-pt" style="padding: 15px 35px; font-size: 18px; cursor: pointer; border: 3px solid #fff; background: #29b6f6; color: white; border-radius: 8px; font-weight: bold; box-shadow: 0px 4px #1b80ad;">English</button>
+  </div>
+</div>
+
+<div id="message" style="display:none;">
+    <h1>Loading</h1>
+    <h1 class="dot one">.</h1>
+    <h1 class="dot two">.</h1>
+    <h1 class="dot three">.</h1>
+</div>
+
 <script>
     window.NOSW = true;
     window.GAME_CONFIG = {
@@ -142,15 +92,80 @@ console.log("TUDO MODIFICADO! Moedas, Chaves, Ninja, Teleporter e Sem Tutorial. 
         leaderboard: 'mockup',
         bundlesPath: './bundles',
     }
+
+    localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
+      "name": "Kamegame unlockedAll",
+      "muted": false, "tutorial": false, "adConsent": false,
+      "wordHunt": { "word": "wO=w*/DGOr@8", "currentLetter": "", "completed": [] },
+      "currencies": { "coins": 9999999, "keys": 9999999 }, "highscore": 9999999,
+      "missions": [[{"id": "mission-score-onerun", "progress": 9999999}]], "rewardedBreakPrize": 0
+    }));
+
+    localStorage.setItem('ShopSettings', JSON.stringify({
+      "selectedCharacter": "ninja",
+      "purchased": {
+        "characters": ["jake", "tricky", "fresh", "spike", "yutani", "king", "lucy", "ninja", "tagbot", "tasha", "brody"],
+        "outfits": [],
+        "boards": ["hoverboard", "bigkahuna", "bouncer", "daredevil", "greatwhite", "hotrod", "lowrider", "lumberjack", "monster", "scoot", "skullfire", "starboard", "sunset", "superhero", "teleporter", "windglider"],
+        "boosts": {
+          "consumables": { "hoverboard": 999999, "mysteryBox": 999, "scoreBooster": 999999, "headstart": 999999 },
+          "permanents": { "jetpack": 6, "sneakers": 6, "magnet": 6, "multiplier": 6 }
+        }
+      }
+    }));
+
+    localStorage.setItem('BoardSettings', JSON.stringify({
+      "unlockedBoards": ["hoverboard", "teleporter"], "selectedBoard": "teleporter", "name": "teleporter", "powerups": [0]
+    }));
+
+    function iniciarJogo(idioma) {
+      console.log("Iniciando jogo para a rota:", idioma);
+      
+      const originalFetch = window.fetch;
+      window.fetch = async function(...args) {
+        let url = args[0];
+        
+        if (typeof url === 'string' && url.includes('lang-en.json')) {
+          if (idioma === 'en') {
+          
+            args[0] = url;
+          } else if (idioma === 'pt') {
+            
+            args[0] = url.replace('lang-en.json', 'lang-pt-br.json');
+          }
+        }
+        return originalFetch.apply(this, args);
+      };
+
+      document.getElementById('modal-idioma').style.display = 'none';
+      document.getElementById('message').style.display = 'block';
+
+      const scriptLoading = document.createElement('script');
+      scriptLoading.src = "js/loading.js";
+      document.body.appendChild(scriptLoading);
+
+      const scriptBoot = document.createElement('script');
+      scriptBoot.src = "js/boot.js";
+      document.body.appendChild(scriptBoot);
+    }
+
+    const listaIdiomas = navigator.languages && navigator.languages.length > 0 ? navigator.languages : [navigator.language || ''];
+    const idiomaPrincipal = listaIdiomas[0].toLowerCase();
+    
+    console.log("Idioma real e prioritário detectado:", idiomaPrincipal);
+
+    if (idiomaPrincipal.startsWith('pt')) {
+  
+      console.log("É Português nativo! Chamando 'en' para carregar Português.");
+      iniciarJogo('pt');
+    } else {
+
+      console.log("Não é português! Chamando 'pt' para carregar Inglês.");
+      iniciarJogo('en');
+    }
+
+    document.getElementById('btn-lang-en').addEventListener('click', () => iniciarJogo('en'));
+    document.getElementById('btn-lang-pt').addEventListener('click', () => iniciarJogo('pt'));
 </script>
-<div id="message">
-    <h1>Loading</h1>
-    <h1 class="dot one">.</h1>
-    <h1 class="dot two">.</h1>
-    <h1 class="dot three">.</h1>
-</div>
-<script src="js/loading.js"></script>
-<script src="js/boot.js"></script>
 </body>
 </html>
- 
