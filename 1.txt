@@ -13,7 +13,23 @@
         bundlesPath: REPO_URL + 'bundles',
     };
 
-    // CORREÇÃO UNIVERSAL DE WEB WORKERS (Força tudo pro jsDelivr)
+    // 🔥 O VIGIA DE TAGS SCRIPT (Resolve o problema do ./poki-sdk-core.js)
+    // Esse observador intercepta qualquer tag script que o Poki tentar injetar 
+    // com caminho relativo e força a rota para a raiz real do seu jsDelivr.
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.tagName === 'SCRIPT' && node.src) {
+                    if (node.src.includes('poki-sdk-core.js') && !node.src.startsWith('http')) {
+                        node.src = REPO_URL + 'poki-sdk-core.js';
+                    }
+                }
+            });
+        });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    // CORREÇÃO UNIVERSAL DE WEB WORKERS
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         let fullURL = scriptURL;
@@ -38,7 +54,6 @@
     };
     </script>
 
-    <!-- Puxa o seu poki-sdk.js oficial que vai chamar o core na mesma raiz -->
     <script src="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/poki-sdk.js"></script>
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -87,7 +102,7 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando motor de rotas universal corrigido...");
+      console.log("Iniciando motor de rotas universal...");
       
       const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
@@ -106,8 +121,7 @@
              url = url.split("content:/media/external/file/")[1];
           }
 
-          // CORREÇÃO DA RAIZ: Se o arquivo requisitado for o poki-sdk-core ou qualquer assets/js,
-          // intercepta o link que o injetor avacalhou e monta o caminho definitivo pro seu jsDelivr.
+          // INTERCEPTADOR DE CORREÇÃO DE EXTENSÕES E PASTAS VIA FETCH
           if (!url.startsWith(URL_BASE_JOGO)) {
              let caminhoReal = url;
              
