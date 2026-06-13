@@ -6,14 +6,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Força o navegador a ignorar a URL esquisita do Module e usar o seu GitHub como raiz para tudo -->
     <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
     
     <script>
-    // FIX ABSOLUTO PARA MODULE: Sobrescreve a localização do documento para a engine não se perder
     const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
     
-    // Força o empacotador de pacotes (bundles) a olhar pro lugar certo
     window.GAME_CONFIG = {
         pokiSdkDebug: false,
         leaderboard: 'mockup',
@@ -21,31 +18,43 @@
     };
     window.NOSW = true;
 
-    // Bloqueia tentativas da engine de ler a URL do iframe do Module
-    Object.defineProperty(window, 'location', {
-        value: {
-            href: REPO_URL,
-            protocol: 'https:',
-            host: 'cdn.jsdelivr.net',
-            pathname: '/gh/jsonsonson/baals@main/',
-            search: '',
-            hash: ''
-        },
-        writable: false
-    });
-
-    // Burlar o bloqueio de CORS do Web Worker dentro do Module
+    // BYPASS UNIVERSAL DE CORS PARA WEB WORKER
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         let fullURL = scriptURL;
         if (!fullURL.startsWith('http')) {
             fullURL = REPO_URL + fullURL.replace(/^\//, '');
         }
-        // Se o seu repositório usa .webp.json ou nomes assim, o worker precisa achar direto
-        const blobCode = "importScripts('" + fullURL + "');";
-        const blob = new Blob([blobCode], { type: 'application/javascript' });
-        const blobURL = URL.createObjectURL(blob);
-        return new OriginalWorker(blobURL);
+        if (fullURL.includes('?')) {
+            fullURL = fullURL.split('?')[0];
+        }
+
+        // Criamos um Worker "fantoche" que baixa o script real via fetch assíncrono.
+        // Isso funciona em QUALQUER site ou domínio automaticamente!
+        const blobCode = `
+            self.onmessage = function(e) {
+                fetch('${fullURL}')
+                    .then(r => r.text())
+                    .then(code => {
+                        eval(code);
+                        // Repassa a mensagem inicial para o script carregado
+                        self.onmessage = null; 
+                        self.postMessage({type: 'WORKER_READY'});
+                    });
+            };
+        `;
+        
+        try {
+            const blob = new Blob([blobCode], { type: 'application/javascript' });
+            const blobURL = URL.createObjectURL(blob);
+            const worker = new OriginalWorker(blobURL);
+            
+            // Ativa o carregamento do script interno
+            worker.postMessage('init'); 
+            return worker;
+        } catch (e) {
+            return new OriginalWorker(fullURL);
+        }
     };
     </script>
 
@@ -76,7 +85,6 @@
 </div>
 
 <script>
-    // Injeção de save nas localStorage
     localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
       "name": "Kamegame unlockedAll", "muted": false, "tutorial": false, "adConsent": false,
       "wordHunt": { "word": "wO=w*/DGOr@8", "currentLetter": "", "completed": [] },
@@ -98,7 +106,7 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando jogo no modo Gadget Module para:", idioma);
+      console.log("Iniciando motor de rotas adaptado:", idioma);
       
       const originalFetch = window.fetch;
       window.fetch = async function(...args) {
@@ -111,16 +119,18 @@
             url = url.split('?')[0];
           }
 
-          // Se a URL for um blob ou base64 estranho gerado pelo module, deixa passar direto
           if (url.startsWith('data:') || url.startsWith('blob:')) {
              return originalFetch.apply(this, args);
           }
 
-          // Converte qualquer rota relativa ou lixo de IP para o caminho absoluto do GitHub
+          if (url.includes('content:/media/external/file/')) {
+             url = url.split('content:/media/external/file/')[1];
+          }
+
           if (!url.startsWith('http://') && !url.startsWith('https://')) {
              url = REPO_URL + url.replace(/^\//, '');
-          } else if (url.startsWith('http://192.168')) {
-             const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
+          } else if (url.startsWith('http://192.168') || url.includes('localhost')) {
+             const limpaLocal = url.replace(/^http:\/\/[0-9.]+(:[0-9]+)?\//, '');
              url = REPO_URL + limpaLocal.replace(/^\//, '');
           }
 
@@ -129,7 +139,6 @@
         return originalFetch.apply(this, args);
       };
 
-      // Desbloqueador automático de som ao interagir
       const liberarAudio = () => {
           if (window.audioContext && window.audioContext.state === 'suspended') {
               window.audioContext.resume();
