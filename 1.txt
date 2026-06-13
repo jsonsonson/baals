@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/" />
     
-    <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
-
     <script>
     const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
     
@@ -107,7 +106,6 @@
              url = url.split("content:/media/external/file/")[1];
           }
 
-          // Ajusta a rota caso o navegador junte o about:blank com caminhos relativos no fetch
           if (!url.startsWith(URL_BASE_JOGO) && !url.startsWith('http://') && !url.startsWith('https://')) {
              let caminhoReal = url;
              
