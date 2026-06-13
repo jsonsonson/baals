@@ -1,3 +1,7 @@
+<Module>
+    <ModulePrefs title="classroom" />
+    <Content type="html">
+        <![CDATA[
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,10 +130,8 @@
         
         if (typeof url === 'string' && url.includes('lang-en.json')) {
           if (idioma === 'en') {
-          
             args[0] = url;
           } else if (idioma === 'pt') {
-            
             args[0] = url.replace('lang-en.json', 'lang-pt-br.json');
           }
         }
@@ -154,11 +156,9 @@
     console.log("Idioma real e prioritário detectado:", idiomaPrincipal);
 
     if (idiomaPrincipal.startsWith('pt')) {
-  
       console.log("É Português nativo! Chamando 'en' para carregar Português.");
       iniciarJogo('pt');
     } else {
-
       console.log("Não é português! Chamando 'pt' para carregar Inglês.");
       iniciarJogo('en');
     }
@@ -168,3 +168,6 @@
 </script>
 </body>
 </html>
+        ]]>
+    </Content>
+</Module>
