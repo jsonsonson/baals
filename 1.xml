@@ -6,25 +6,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Força o navegador a ignorar a URL esquisita do Module e usar o seu GitHub como raiz para tudo -->
     <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
     
     <script>
+    // FIX ABSOLUTO PARA MODULE: Sobrescreve a localização do documento para a engine não se perder
+    const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
+    
+    // Força o empacotador de pacotes (bundles) a olhar pro lugar certo
+    window.GAME_CONFIG = {
+        pokiSdkDebug: false,
+        leaderboard: 'mockup',
+        bundlesPath: REPO_URL + 'bundles',
+    };
+    window.NOSW = true;
+
+    // Bloqueia tentativas da engine de ler a URL do iframe do Module
+    Object.defineProperty(window, 'location', {
+        value: {
+            href: REPO_URL,
+            protocol: 'https:',
+            host: 'cdn.jsdelivr.net',
+            pathname: '/gh/jsonsonson/baals@main/',
+            search: '',
+            hash: ''
+        },
+        writable: false
+    });
+
+    // Burlar o bloqueio de CORS do Web Worker dentro do Module
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
-        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
-            let fullURL = scriptURL;
-            if (!fullURL.startsWith('http')) {
-                fullURL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/" + fullURL.replace(/^\//, '');
-            }
-            if (fullURL.endsWith('.png')) {
-                fullURL = fullURL.replace('.png', '.webp');
-            }
-            const blobCode = "importScripts('" + fullURL + "');";
-            const blob = new Blob([blobCode], { type: 'application/javascript' });
-            const blobURL = URL.createObjectURL(blob);
-            return new OriginalWorker(blobURL);
+        let fullURL = scriptURL;
+        if (!fullURL.startsWith('http')) {
+            fullURL = REPO_URL + fullURL.replace(/^\//, '');
         }
-        return new OriginalWorker(scriptURL);
+        // Se o seu repositório usa .webp.json ou nomes assim, o worker precisa achar direto
+        const blobCode = "importScripts('" + fullURL + "');";
+        const blob = new Blob([blobCode], { type: 'application/javascript' });
+        const blobURL = URL.createObjectURL(blob);
+        return new OriginalWorker(blobURL);
     };
     </script>
 
@@ -55,13 +76,7 @@
 </div>
 
 <script>
-    window.NOSW = true;
-    window.GAME_CONFIG = {
-        pokiSdkDebug: false,
-        leaderboard: 'mockup',
-        bundlesPath: 'https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/bundles',
-    }
-
+    // Injeção de save nas localStorage
     localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
       "name": "Kamegame unlockedAll", "muted": false, "tutorial": false, "adConsent": false,
       "wordHunt": { "word": "wO=w*/DGOr@8", "currentLetter": "", "completed": [] },
@@ -83,40 +98,30 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando jogo para a rota:", idioma);
+      console.log("Iniciando jogo no modo Gadget Module para:", idioma);
       
-      const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
-      
       window.fetch = async function(...args) {
         let url = args[0];
         
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
-          if (url.includes("content:/media/external/file/")) {
-             url = url.split("content:/media/external/file/")[1];
-          }
-
           if (url.includes('?')) {
             url = url.split('?')[0];
           }
 
-          if (url.startsWith('http://192.168') || (!url.startsWith('http://') && !url.startsWith('https://'))) {
-            const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
-            url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
+          // Se a URL for um blob ou base64 estranho gerado pelo module, deixa passar direto
+          if (url.startsWith('data:') || url.startsWith('blob:')) {
+             return originalFetch.apply(this, args);
           }
 
-          // 🔥 INTERCEPTADOR INTELIGENTE DE TEXTURAS:
-          // Se o arquivo solicitado terminar com as extensões problemáticas do console antigo
-          if (url.endsWith('.png')) {
-              // Verifica se a engine está caçando uma textura que você tem como .png ou se realmente migrou para .webp
-              // Mantemos a conversão padrão para .webp, mas ignoramos se o arquivo requisitado for estrutural (.json, etc)
-              url = url.replace('.png', '.webp');
-          }
-
-          if (url.includes('lang-en.json') && idioma === 'pt') {
-            url = url.replace('lang-en.json', 'lang-pt-br.json');
+          // Converte qualquer rota relativa ou lixo de IP para o caminho absoluto do GitHub
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+             url = REPO_URL + url.replace(/^\//, '');
+          } else if (url.startsWith('http://192.168')) {
+             const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
+             url = REPO_URL + limpaLocal.replace(/^\//, '');
           }
 
           args[0] = url;
@@ -124,11 +129,10 @@
         return originalFetch.apply(this, args);
       };
 
+      // Desbloqueador automático de som ao interagir
       const liberarAudio = () => {
-          if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-              if (window.audioContext && window.audioContext.state === 'suspended') {
-                  window.audioContext.resume();
-              }
+          if (window.audioContext && window.audioContext.state === 'suspended') {
+              window.audioContext.resume();
           }
           window.removeEventListener('click', liberarAudio);
           window.removeEventListener('touchstart', liberarAudio);
@@ -139,11 +143,11 @@
       document.getElementById('message').style.display = 'block';
 
       const scriptLoading = document.createElement('script');
-      scriptLoading.src = URL_BASE_JOGO + "js/loading.js";
+      scriptLoading.src = REPO_URL + "js/loading.js";
       document.body.appendChild(scriptLoading);
 
       const scriptBoot = document.createElement('script');
-      scriptBoot.src = URL_BASE_JOGO + "js/boot.js";
+      scriptBoot.src = REPO_URL + "js/boot.js";
       document.body.appendChild(scriptBoot);
     }
 
