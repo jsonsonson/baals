@@ -9,7 +9,6 @@
     <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
     
     <script>
-
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
@@ -34,7 +33,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
 
-    <title>Subway S</title>
+    <title>Subway Surfers</title>
     <style>
         body, html {
             margin: 0; height: 100%; background-color: #0b316b; overflow: hidden;
@@ -62,7 +61,6 @@
         leaderboard: 'mockup',
         bundlesPath: 'https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/bundles',
     }
-
 
     localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
       "name": "Kamegame unlockedAll", "muted": false, "tutorial": false, "adConsent": false,
@@ -96,27 +94,26 @@
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
-
           if (url.includes("content:/media/external/file/")) {
              url = url.split("content:/media/external/file/")[1];
           }
 
-
           if (url.includes('?')) {
             url = url.split('?')[0];
           }
-
 
           if (url.startsWith('http://192.168') || (!url.startsWith('http://') && !url.startsWith('https://'))) {
             const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
             url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
           }
 
-
+          // 🔥 INTERCEPTADOR INTELIGENTE DE TEXTURAS:
+          // Se o arquivo solicitado terminar com as extensões problemáticas do console antigo
           if (url.endsWith('.png')) {
-            url = url.replace('.png', '.webp');
+              // Verifica se a engine está caçando uma textura que você tem como .png ou se realmente migrou para .webp
+              // Mantemos a conversão padrão para .webp, mas ignoramos se o arquivo requisitado for estrutural (.json, etc)
+              url = url.replace('.png', '.webp');
           }
-
 
           if (url.includes('lang-en.json') && idioma === 'pt') {
             url = url.replace('lang-en.json', 'lang-pt-br.json');
@@ -126,7 +123,6 @@
         }
         return originalFetch.apply(this, args);
       };
-
 
       const liberarAudio = () => {
           if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
