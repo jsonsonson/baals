@@ -5,21 +5,28 @@
     <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
     
     <script>
+    const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
+
+    // 🛠️ FIX 1: Interceptador Corrigido para Web Workers
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
-        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
-            let fullURL = scriptURL;
-            if (!fullURL.startsWith('http')) {
-                fullURL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/" + fullURL.replace(/^\//, '');
+        let fullURL = scriptURL;
+        
+        if (typeof fullURL === 'string') {
+            // Limpa resquícios de caminhos virtuais
+            fullURL = fullURL.replace(/^blob:https?:\/\/[^\/]+\//i, '');
+            fullURL = fullURL.replace(/^about:blank\//i, '');
+            
+            if (!fullURL.startsWith('http://') && !fullURL.startsWith('https://')) {
+                fullURL = REPO_URL + fullURL.replace(/^\//, '');
             }
-            // C
-            if (fullURL.endsWith('.png')) {
-                fullURL = fullURL.replace('.png', '.webp');
-            }
+            
+            if (fullURL.includes('?')) fullURL = fullURL.split('?')[0];
+            if (fullURL.endsWith('.png')) fullURL = fullURL.replace('.png', '.webp');
+
             const blobCode = "importScripts('" + fullURL + "');";
             const blob = new Blob([blobCode], { type: 'application/javascript' });
-            const blobURL = URL.createObjectURL(blob);
-            return new OriginalWorker(blobURL);
+            return new OriginalWorker(URL.createObjectURL(blob));
         }
         return new OriginalWorker(scriptURL);
     };
@@ -30,7 +37,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
 
-    <title>Subway Surfers - Unlocked Webp Fix</title>
+    <title>Subway Surfers</title>
     <style>
         body, html {
             margin: 0; height: 100%; background-color: #0b316b; overflow: hidden;
@@ -59,7 +66,6 @@
         bundlesPath: 'https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/bundles',
     }
 
-    // Inje
     localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
       "name": "Kamegame unlockedAll", "muted": false, "tutorial": false, "adConsent": false,
       "wordHunt": { "word": "wO=w*/DGOr@8", "currentLetter": "", "completed": [] },
@@ -81,7 +87,7 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando jogo para a rota:", idioma);
+      console.log("Iniciando limpador de rotas universal...");
       
       const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
@@ -92,28 +98,30 @@
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
-          // idk
+          // 🛠️ FILTRO CRUCIAL: Remove "blob:https://..." ou "about:blank" grudados no começo da requisição
+          url = url.replace(/^blob:https?:\/\/[^\/]+\//i, '');
+          url = url.replace(/^about:blank\//i, '');
+
           if (url.includes("content:/media/external/file/")) {
              url = url.split("content:/media/external/file/")[1];
           }
 
-          // Co
           if (url.includes('?')) {
             url = url.split('?')[0];
           }
 
-          // S
-          if (url.startsWith('http://192.168') || (!url.startsWith('http://') && !url.startsWith('https://'))) {
-            const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
-            url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
+          // Se a URL sobrou sem domínio ou corrompida, reconstrói ela apontando direto pro seu repositório
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+             // Limpa caminhos duplicados causados pela tag base antiga
+             let caminhoLimpo = url.replace(/^https?:\/\/[^\/]+\//i, ''); 
+             url = URL_BASE_JOGO + caminhoLimpo.replace(/^\//, '');
           }
 
-
-          if (url.endsWith('.png')) {
-            url = url.replace('.png', '.webp');
+          // Garante que se o arquivo final for .png, vira .webp
+          if (url.endsWith('.png') || url.includes('.png')) {
+              url = url.replace('.png', '.webp');
           }
 
-          // Ro
           if (url.includes('lang-en.json') && idioma === 'pt') {
             url = url.replace('lang-en.json', 'lang-pt-br.json');
           }
@@ -143,6 +151,3 @@
       iniciarJogo('en');
     }
 </script>
-</body>
-</html>
-
