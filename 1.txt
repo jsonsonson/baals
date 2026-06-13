@@ -1,64 +1,45 @@
-<Module>
-    <ModulePrefs title="classroom" />
-    <Content type="html">
-        <![CDATA[
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
     
     <script>
     const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
     
+    // Força o jogo a usar o GitHub para achar a pasta bundles
+    window.NOSW = true;
     window.GAME_CONFIG = {
         pokiSdkDebug: false,
         leaderboard: 'mockup',
         bundlesPath: REPO_URL + 'bundles',
     };
-    window.NOSW = true;
 
-    // BYPASS UNIVERSAL DE CORS PARA WEB WORKER
+    // CORREÇÃO DOS WORKERS: Força a rota do GitHub em qualquer ambiente
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         let fullURL = scriptURL;
-        if (!fullURL.startsWith('http')) {
+        
+        if (!fullURL.startsWith('http://') && !fullURL.startsWith('https://')) {
             fullURL = REPO_URL + fullURL.replace(/^\//, '');
         }
-        if (fullURL.includes('?')) {
-            fullURL = fullURL.split('?')[0];
-        }
-
-        // Criamos um Worker "fantoche" que baixa o script real via fetch assíncrono.
-        // Isso funciona em QUALQUER site ou domínio automaticamente!
-        const blobCode = `
-            self.onmessage = function(e) {
-                fetch('${fullURL}')
-                    .then(r => r.text())
-                    .then(code => {
-                        eval(code);
-                        // Repassa a mensagem inicial para o script carregado
-                        self.onmessage = null; 
-                        self.postMessage({type: 'WORKER_READY'});
-                    });
-            };
-        `;
         
-        try {
+        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
+            if (fullURL.includes('?')) {
+                fullURL = fullURL.split('?')[0];
+            }
+            if (fullURL.endsWith('.png')) {
+                fullURL = fullURL.replace('.png', '.webp');
+            }
+            const blobCode = "importScripts('" + fullURL + "');";
             const blob = new Blob([blobCode], { type: 'application/javascript' });
             const blobURL = URL.createObjectURL(blob);
-            const worker = new OriginalWorker(blobURL);
-            
-            // Ativa o carregamento do script interno
-            worker.postMessage('init'); 
-            return worker;
-        } catch (e) {
-            return new OriginalWorker(fullURL);
+            return new OriginalWorker(blobURL);
         }
+        return new OriginalWorker(fullURL);
     };
     </script>
 
-    <script src="poki-sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/poki-sdk.js"></script>
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
@@ -67,7 +48,7 @@
     <style>
         body, html {
             margin: 0; height: 100%; background-color: #0b316b; overflow: hidden;
-            background-image: url('assets/preload/splash.webp'); background-repeat: no-repeat; background-position: center;
+            background-image: url('https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/assets/preload/splash.webp'); background-repeat: no-repeat; background-position: center;
         }
         #message { text-align: center; font-size: 8px; z-index: 5; font-family: "Verdana", sans-serif; color: #fff; position: fixed; width: 100%; z-index: 9999; }
         .dot { display: inline; margin-left: 0.2em; margin-right: 0.2em; position: relative; top: -1em; font-size: 3.5em; opacity: 0; animation: showHideDot 2.5s ease-in-out infinite; }
@@ -106,32 +87,39 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando motor de rotas adaptado:", idioma);
+      console.log("Iniciando jogo com rotas TXT fixas:", idioma);
       
+      const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
+      
       window.fetch = async function(...args) {
         let url = args[0];
         
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
+          if (url.includes("content:/media/external/file/")) {
+             url = url.split("content:/media/external/file/")[1];
+          }
+
           if (url.includes('?')) {
             url = url.split('?')[0];
           }
 
-          if (url.startsWith('data:') || url.startsWith('blob:')) {
-             return originalFetch.apply(this, args);
-          }
-
-          if (url.includes('content:/media/external/file/')) {
-             url = url.split('content:/media/external/file/')[1];
-          }
-
+          // CORREÇÃO DOS REQUISITOS: Força o jsDelivr na frente de TUDO o que for arquivo local
           if (!url.startsWith('http://') && !url.startsWith('https://')) {
-             url = REPO_URL + url.replace(/^\//, '');
-          } else if (url.startsWith('http://192.168') || url.includes('localhost')) {
-             const limpaLocal = url.replace(/^http:\/\/[0-9.]+(:[0-9]+)?\//, '');
-             url = REPO_URL + limpaLocal.replace(/^\//, '');
+            url = URL_BASE_JOGO + url.replace(/^\//, '');
+          } else if (url.startsWith('http://192.168') || url.includes('localhost') || url.includes('127.0.0.1')) {
+            const limpaLocal = url.replace(/^http:\/\/[a-zA-Z0-9.:]+/g, '');
+            url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
+          }
+
+          if (url.endsWith('.png')) {
+              url = url.replace('.png', '.webp');
+          }
+
+          if (url.includes('lang-en.json') && idioma === 'pt') {
+            url = url.replace('lang-en.json', 'lang-pt-br.json');
           }
 
           args[0] = url;
@@ -140,8 +128,10 @@
       };
 
       const liberarAudio = () => {
-          if (window.audioContext && window.audioContext.state === 'suspended') {
-              window.audioContext.resume();
+          if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+              if (window.audioContext && window.audioContext.state === 'suspended') {
+                  window.audioContext.resume();
+              }
           }
           window.removeEventListener('click', liberarAudio);
           window.removeEventListener('touchstart', liberarAudio);
@@ -152,11 +142,11 @@
       document.getElementById('message').style.display = 'block';
 
       const scriptLoading = document.createElement('script');
-      scriptLoading.src = REPO_URL + "js/loading.js";
+      scriptLoading.src = URL_BASE_JOGO + "js/loading.js";
       document.body.appendChild(scriptLoading);
 
       const scriptBoot = document.createElement('script');
-      scriptBoot.src = REPO_URL + "js/boot.js";
+      scriptBoot.src = URL_BASE_JOGO + "js/boot.js";
       document.body.appendChild(scriptBoot);
     }
 
@@ -171,7 +161,3 @@
 </script>
 </body>
 </html>
-
-        ]]>
-    </Content>
-</Module>
