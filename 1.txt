@@ -13,7 +13,7 @@
         bundlesPath: REPO_URL + 'bundles',
     };
 
-    // CORREÇÃO UNIVERSAL DE WEB WORKERS
+    // CORREÇÃO UNIVERSAL DE WEB WORKERS (Força tudo pro jsDelivr)
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         let fullURL = scriptURL;
@@ -22,7 +22,7 @@
             fullURL = REPO_URL + fullURL.replace(/^\//, '');
         }
         
-        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
+        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker') || scriptURL.includes('poki')) {
             if (fullURL.includes('?')) {
                 fullURL = fullURL.split('?')[0];
             }
@@ -38,6 +38,7 @@
     };
     </script>
 
+    <!-- Puxa o seu poki-sdk.js oficial que vai chamar o core na mesma raiz -->
     <script src="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/poki-sdk.js"></script>
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -86,7 +87,7 @@
     }));
 
     function iniciarJogo(idioma) {
-      console.log("Iniciando motor de rotas universal...");
+      console.log("Iniciando motor de rotas universal corrigido...");
       
       const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
@@ -97,23 +98,22 @@
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
-          // 1. Limpa parâmetros de cache do link (?...)
           if (url.includes('?')) {
             url = url.split('?')[0];
           }
 
-          // 2. Limpa caminhos temporários se o injetor simular armazenamento local Android
           if (url.includes("content:/media/external/file/")) {
              url = url.split("content:/media/external/file/")[1];
           }
 
-          // 3. INTERCEPTADOR REVERSO UNIVERSAL: 
-          // Se a URL gerada tentar puxar arquivos fora da raiz do jsDelivr, nós
-          // isolamos apenas a pasta interna correta do jogo e montamos a rota certa.
+          // CORREÇÃO DA RAIZ: Se o arquivo requisitado for o poki-sdk-core ou qualquer assets/js,
+          // intercepta o link que o injetor avacalhou e monta o caminho definitivo pro seu jsDelivr.
           if (!url.startsWith(URL_BASE_JOGO)) {
              let caminhoReal = url;
              
-             if (url.includes('assets/')) {
+             if (url.includes('poki-sdk-core.js')) {
+                 caminhoReal = 'poki-sdk-core.js';
+             } else if (url.includes('assets/')) {
                  caminhoReal = 'assets/' + url.split('assets/')[1];
              } else if (url.includes('js/')) {
                  caminhoReal = 'js/' + url.split('js/')[1];
@@ -126,7 +126,6 @@
              url = URL_BASE_JOGO + caminhoReal;
           }
 
-          // 4. Correção automática de extensões de textura para a sua pasta .webp
           if (url.endsWith('.png')) {
               url = url.replace('.png', '.webp');
           }
