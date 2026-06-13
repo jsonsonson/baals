@@ -7,79 +7,46 @@
 <head>
     <meta charset="UTF-8">
     <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
+    
+    <script>
+
+    const OriginalWorker = window.Worker;
+    window.Worker = function(scriptURL) {
+        if (scriptURL.includes('jsdelivr.net') || scriptURL.includes('js/workers/') || scriptURL.includes('worker')) {
+            let fullURL = scriptURL;
+            if (!fullURL.startsWith('http')) {
+                fullURL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/" + fullURL.replace(/^\//, '');
+            }
+            if (fullURL.endsWith('.png')) {
+                fullURL = fullURL.replace('.png', '.webp');
+            }
+            const blobCode = "importScripts('" + fullURL + "');";
+            const blob = new Blob([blobCode], { type: 'application/javascript' });
+            const blobURL = URL.createObjectURL(blob);
+            return new OriginalWorker(blobURL);
+        }
+        return new OriginalWorker(scriptURL);
+    };
+    </script>
+
     <script src="poki-sdk.js"></script>
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="viewport"
-          content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
-    <meta name="description" content="">
-
-    <link rel="manifest" href="subwaysurfers.webmanifest">
-    <link rel="icon" href="data:," type="image/png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/images/app-icon-114.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/images/app-icon-72.png">
-    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="assets/images/app-icon-57.png">
-    <link rel="apple-touch-icon-precomposed" href="assets/images/app-icon-57.png">
-
-    <title>Ssbw</title>
+    <title>Subway S</title>
     <style>
         body, html {
-            margin: 0;
-            height: 100%;
-            background-color: #0b316b;
-            overflow: hidden;
-            background-image: url('assets/preload/splash.png');
-            background-repeat: no-repeat;
-            background-position: center;
+            margin: 0; height: 100%; background-color: #0b316b; overflow: hidden;
+            background-image: url('assets/preload/splash.webp'); background-repeat: no-repeat; background-position: center;
         }
-
-        #message {
-            text-align: center;
-            font-size: 8px;
-            z-index: 5;
-            font-family: "Verdana", sans-serif;
-            color: #fff;
-            position: fixed;
-            width: 100%;
-            z-index: 9999;
-        }
-
-        .dot {
-            display: inline;
-            margin-left: 0.2em;
-            margin-right: 0.2em;
-            position: relative;
-            top: -1em;
-            font-size: 3.5em;
-            opacity: 0;
-            animation: showHideDot 2.5s ease-in-out infinite;
-        }
-
-        .dot.one { animation-delay: 0.2s; }
-        .dot.two { animation-delay: 0.4s; }
-        .dot.three { animation-delay: 0.6s; }
-
-        @keyframes showHideDot {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            60% { opacity: 1; }
-            100% { opacity: 0; }
-        }
+        #message { text-align: center; font-size: 8px; z-index: 5; font-family: "Verdana", sans-serif; color: #fff; position: fixed; width: 100%; z-index: 9999; }
+        .dot { display: inline; margin-left: 0.2em; margin-right: 0.2em; position: relative; top: -1em; font-size: 3.5em; opacity: 0; animation: showHideDot 2.5s ease-in-out infinite; }
+        .dot.one { animation-delay: 0.2s; } .dot.two { animation-delay: 0.4s; } .dot.three { animation-delay: 0.6s; }
+        @keyframes showHideDot { 0% { opacity: 0; } 50% { opacity: 1; } 60% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
-
-
-<div id="modal-idioma" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b316b; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; color: white; display: none;">
-  <h2 style="margin-bottom: 25px; font-size: 22px; text-shadow: 2px 2px #000;">Select Language / Selecione o Idioma</h2>
-  <div style="display: flex; gap: 20px;">
-    <button id="btn-lang-en" style="padding: 15px 35px; font-size: 18px; cursor: pointer; border: 3px solid #fff; background: #f15a24; color: white; border-radius: 8px; font-weight: bold; box-shadow: 0px 4px #993d18;">Português</button>
-    <button id="btn-lang-pt" style="padding: 15px 35px; font-size: 18px; cursor: pointer; border: 3px solid #fff; background: #29b6f6; color: white; border-radius: 8px; font-weight: bold; box-shadow: 0px 4px #1b80ad;">English</button>
-  </div>
-</div>
 
 <div id="message" style="display:none;">
     <h1>Loading</h1>
@@ -93,12 +60,12 @@
     window.GAME_CONFIG = {
         pokiSdkDebug: false,
         leaderboard: 'mockup',
-        bundlesPath: './bundles',
+        bundlesPath: 'https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/bundles',
     }
 
+
     localStorage.setItem('subway-surfers-v_profile', JSON.stringify({
-      "name": "Kamegame unlockedAll",
-      "muted": false, "tutorial": false, "adConsent": false,
+      "name": "Kamegame unlockedAll", "muted": false, "tutorial": false, "adConsent": false,
       "wordHunt": { "word": "wO=w*/DGOr@8", "currentLetter": "", "completed": [] },
       "currencies": { "coins": 9999999, "keys": 9999999 }, "highscore": 9999999,
       "missions": [[{"id": "mission-score-onerun", "progress": 9999999}]], "rewardedBreakPrize": 0
@@ -117,57 +84,85 @@
       }
     }));
 
-    localStorage.setItem('BoardSettings', JSON.stringify({
-      "unlockedBoards": ["hoverboard", "teleporter"], "selectedBoard": "teleporter", "name": "teleporter", "powerups": [0]
-    }));
-
     function iniciarJogo(idioma) {
       console.log("Iniciando jogo para a rota:", idioma);
       
+      const URL_BASE_JOGO = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
       const originalFetch = window.fetch;
+      
       window.fetch = async function(...args) {
         let url = args[0];
         
-        if (typeof url === 'string' && url.includes('lang-en.json')) {
-          if (idioma === 'en') {
-            args[0] = url;
-          } else if (idioma === 'pt') {
-            args[0] = url.replace('lang-en.json', 'lang-pt-br.json');
+        if (typeof url === 'string') {
+          url = decodeURIComponent(url);
+
+
+          if (url.includes("content:/media/external/file/")) {
+             url = url.split("content:/media/external/file/")[1];
           }
+
+
+          if (url.includes('?')) {
+            url = url.split('?')[0];
+          }
+
+
+          if (url.startsWith('http://192.168') || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+            const limpaLocal = url.replace(/^http:\/\/192\.168\.[0-9.]+(:[0-9]+)?\//, '');
+            url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
+          }
+
+
+          if (url.endsWith('.png')) {
+            url = url.replace('.png', '.webp');
+          }
+
+
+          if (url.includes('lang-en.json') && idioma === 'pt') {
+            url = url.replace('lang-en.json', 'lang-pt-br.json');
+          }
+
+          args[0] = url;
         }
         return originalFetch.apply(this, args);
       };
 
-      document.getElementById('modal-idioma').style.display = 'none';
+
+      const liberarAudio = () => {
+          if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+              if (window.audioContext && window.audioContext.state === 'suspended') {
+                  window.audioContext.resume();
+              }
+          }
+          window.removeEventListener('click', liberarAudio);
+          window.removeEventListener('touchstart', liberarAudio);
+      };
+      window.addEventListener('click', liberarAudio);
+      window.addEventListener('touchstart', liberarAudio);
+
       document.getElementById('message').style.display = 'block';
 
       const scriptLoading = document.createElement('script');
-      scriptLoading.src = "js/loading.js";
+      scriptLoading.src = URL_BASE_JOGO + "js/loading.js";
       document.body.appendChild(scriptLoading);
 
       const scriptBoot = document.createElement('script');
-      scriptBoot.src = "js/boot.js";
+      scriptBoot.src = URL_BASE_JOGO + "js/boot.js";
       document.body.appendChild(scriptBoot);
     }
 
     const listaIdiomas = navigator.languages && navigator.languages.length > 0 ? navigator.languages : [navigator.language || ''];
     const idiomaPrincipal = listaIdiomas[0].toLowerCase();
-    
-    console.log("Idioma real e prioritário detectado:", idiomaPrincipal);
 
     if (idiomaPrincipal.startsWith('pt')) {
-      console.log("É Português nativo! Chamando 'en' para carregar Português.");
       iniciarJogo('pt');
     } else {
-      console.log("Não é português! Chamando 'pt' para carregar Inglês.");
       iniciarJogo('en');
     }
-
-    document.getElementById('btn-lang-en').addEventListener('click', () => iniciarJogo('en'));
-    document.getElementById('btn-lang-pt').addEventListener('click', () => iniciarJogo('pt'));
 </script>
 </body>
 </html>
+
         ]]>
     </Content>
 </Module>
