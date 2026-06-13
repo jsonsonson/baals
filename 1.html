@@ -7,15 +7,16 @@
     <script>
     const REPO_URL = "https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/";
 
-    // 🛠️ FIX 1: Interceptador Corrigido para Web Workers
+    // 🛠️ FIX 1: Interceptador de Web Workers Ultra-Limpador
     const OriginalWorker = window.Worker;
     window.Worker = function(scriptURL) {
         let fullURL = scriptURL;
         
         if (typeof fullURL === 'string') {
-            // Limpa resquícios de caminhos virtuais
-            fullURL = fullURL.replace(/^blob:https?:\/\/[^\/]+\//i, '');
-            fullURL = fullURL.replace(/^about:blank\//i, '');
+            fullURL = decodeURIComponent(fullURL);
+            
+            // Remove qualquer lixo de blob, cerca virtual ou urls antigas coladas
+            fullURL = fullURL.replace(/.*(assets\/|js\/|bundles\/)/i, '$1');
             
             if (!fullURL.startsWith('http://') && !fullURL.startsWith('https://')) {
                 fullURL = REPO_URL + fullURL.replace(/^\//, '');
@@ -35,7 +36,7 @@
     <script src="poki-sdk.js"></script>
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover"/>
+    <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover">
 
     <title>Subway Surfers</title>
     <style>
@@ -51,7 +52,7 @@
 </head>
 <body>
 
-<div id="message" style="display:none;">
+<div id="message" style="display: none;">
     <h1>Loading</h1>
     <h1 class="dot one">.</h1>
     <h1 class="dot two">.</h1>
@@ -98,9 +99,11 @@
         if (typeof url === 'string') {
           url = decodeURIComponent(url);
 
-          // 🛠️ FILTRO CRUCIAL: Remove "blob:https://..." ou "about:blank" grudados no começo da requisição
-          url = url.replace(/^blob:https?:\/\/[^\/]+\//i, '');
-          url = url.replace(/^about:blank\//i, '');
+          // 🛠️ CORREÇÃO CIRÚRGICA: Arranca fora qualquer lixo como "blob:https...", "about:blank" ou "www.lncc.br" 
+          // que esteja grudado antes de pastas legítimas do jogo.
+          if (url.match(/(assets\/|js\/|bundles\/)/i)) {
+              url = url.replace(/.*(assets\/|js\/|bundles\/)/i, '$1');
+          }
 
           if (url.includes("content:/media/external/file/")) {
              url = url.split("content:/media/external/file/")[1];
@@ -110,14 +113,12 @@
             url = url.split('?')[0];
           }
 
-          // Se a URL sobrou sem domínio ou corrompida, reconstrói ela apontando direto pro seu repositório
+          // Monta a URL final limpa apontando para o seu GitHub
           if (!url.startsWith('http://') && !url.startsWith('https://')) {
-             // Limpa caminhos duplicados causados pela tag base antiga
-             let caminhoLimpo = url.replace(/^https?:\/\/[^\/]+\//i, ''); 
-             url = URL_BASE_JOGO + caminhoLimpo.replace(/^\//, '');
+             url = URL_BASE_JOGO + url.replace(/^\//, '');
           }
 
-          // Garante que se o arquivo final for .png, vira .webp
+          // Garante a conversão para WebP de recursos remotos
           if (url.endsWith('.png') || url.includes('.png')) {
               url = url.replace('.png', '.webp');
           }
@@ -151,3 +152,5 @@
       iniciarJogo('en');
     }
 </script>
+</body>
+</html>
