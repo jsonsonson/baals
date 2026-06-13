@@ -1,8 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jogo>
+<![CDATA[
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/">
+    <base href="https://cdn.jsdelivr.net/gh/jsonsonson/baals@main/" />
     
     <script>
     const OriginalWorker = window.Worker;
@@ -25,11 +29,10 @@
     </script>
 
     <script src="poki-sdk.js"></script>
-        <meta charset="UTF-8" />
-<meta http-equiv="content-type" content="text/html; charset=UTF8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
-
+    <meta charset="UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
 
     <title>Subway Surfers</title>
     <style>
@@ -105,11 +108,7 @@
             url = URL_BASE_JOGO + limpaLocal.replace(/^\//, '');
           }
 
-          // 🔥 INTERCEPTADOR INTELIGENTE DE TEXTURAS:
-          // Se o arquivo solicitado terminar com as extensões problemáticas do console antigo
           if (url.endsWith('.png')) {
-              // Verifica se a engine está caçando uma textura que você tem como .png ou se realmente migrou para .webp
-              // Mantemos a conversão padrão para .webp, mas ignoramos se o arquivo requisitado for estrutural (.json, etc)
               url = url.replace('.png', '.webp');
           }
 
@@ -157,3 +156,5 @@
 </body>
 </html>
 
+]]>
+</jogo>
